@@ -1,0 +1,74 @@
+{
+  "Parameters" : {
+    "RoleArn" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Role ARN for the crawler"
+    },
+    "Description" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Description for the crawler"
+    },
+    "DatabaseName" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Database name"
+    },
+    "S3TargetPath" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "S3 bucket path from where to crawl"
+    },
+    "CrawlerName" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Crawler name"
+    },
+    "RunShedule" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Crawler run schedule"
+    },
+    "Classifier" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Classifier to use for the crawler"
+    },
+    "UpdateBehavior" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "What to do when schema change is detected. Possible values are 'LOG' and 'UPDATE_IN_DATABASE'"
+    },
+    "DeleteBehavior" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "What to do when data deletion is detected. Possible values are 'LOG', 'DELETE_FROM_DATABASE', 'DEPRECATE_IN_DATABASE'"
+    }
+  },
+  "Resources" : {
+    "gluecrowler": {  
+      "Type" : "AWS::Glue::Crawler",
+      "Properties" : {
+        "Role" : {"Ref" : "RoleArn"},
+        "Description" : {"Ref" : "Description"},
+        "DatabaseName" : {"Ref" : "DatabaseName"},
+        "Targets" : {
+          "S3Targets" : [
+            {
+              "Path" : {"Ref" : "S3TargetPath"}
+            }
+          ]
+        },
+        "Name" : {"Ref" : "CrawlerName"},
+        "SchemaChangePolicy" : {
+          "UpdateBehavior" : {"Ref" : "UpdateBehavior"},
+          "DeleteBehavior" : {"Ref" : "DeleteBehavior"}
+        },
+        "Schedule" : {
+          "ScheduleExpression" : {"Ref" : "RunShedule"}
+        }
+      }
+    }
+  }
+}

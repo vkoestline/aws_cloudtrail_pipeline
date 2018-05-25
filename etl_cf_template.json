@@ -1,0 +1,96 @@
+{
+  "Parameters" : {
+    "RoleArn" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Role ARN for the etl"
+    },
+    "Description" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Description for the etl"
+    },
+    "ETLName" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "etl name"
+    },
+    "DatabaseName" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Databse name to where read from"
+    },
+    "TableName" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Table name to where read from"
+    },
+    "DestinationBucket" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Where to store parquet files"
+    },
+    "AllocatedCapacity" : {
+      "Type" : "Number",
+      "Default" : 2,
+      "Description" : "Number of allocated DPUs for the job"
+    },
+    "ScriptLocation" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "S3 path to the job script"
+    },
+    "TempDir" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "S3 path to the temp dir for ETL"
+    },
+    "JobCronSchedule" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Cron string for job scheduling"
+    },
+    "TriggerName" : {
+      "Type" : "String",
+      "Default" : "",
+      "Description" : "Trigger name for the job"
+    }
+  },
+  "Resources" : {
+    "ParquetizerJob": {
+      "Type" : "AWS::Glue::Job",
+      "Properties" : {
+        "Role" : {"Ref" : "RoleArn"},
+        "Name" : {"Ref" : "ETLName"},
+        "Description" : {"Ref" : "Description"},
+        "AllocatedCapacity" : {"Ref" : "AllocatedCapacity"},
+        "DefaultArguments" : {
+          "--continuation-option" : "continuation-enabled",
+          "--job-bookmark-option" : "job-bookmark-enable",
+          "--DB_NAME" : {"Ref" : "DatabaseName"},
+          "--TABLE_NAME" : {"Ref" : "TableName"},
+          "--DEST_BUCKET" : {"Ref" : "DestinationBucket"},
+          "--TempDir": {"Ref": "TempDir"}
+        },
+        "Command" : {
+          "ScriptLocation" : {"Ref" : "ScriptLocation"},
+          "Name" : "glueetl"
+        }
+      }
+    },
+    "ScheduledJobTrigger": {
+      "Type": "AWS::Glue::Trigger",
+      "Properties": {
+        "Type": "SCHEDULED",
+        "Description": "Run parquetizer job periodically",
+        "Schedule": {"Ref" : "JobCronSchedule"},
+        "Actions": [
+          {
+            "JobName": {"Ref" : "ParquetizerJob"}
+          }
+        ],
+        "Name": {"Ref" : "TriggerName"}
+      }
+    }
+  }
+}
